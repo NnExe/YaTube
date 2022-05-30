@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container">
+        <h1>Посты подписок</h1>
+        {% with follow=True %}
+            {% include 'includes/switcher.html' %}
+        {% endwith %}
+        {% for post in page_obj %}
+            {% include 'includes/block.html' %}
+        {% endfor %}
+        {% include 'includes/paginator.html' %}
+    </div>
+{% endblock %}
+{% block title %}Посты подписок{% endblock %}
