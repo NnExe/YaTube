@@ -197,15 +197,15 @@ class PostFormTests(TestCase):
             'text': 'Умный комментарий',
         }
         old_cout = Comment.objects.count()
-        responce=self.authorized_client.post(
-            reverse('posts:add_comment', 
+        responce = self.authorized_client.post(
+            reverse('posts:add_comment',
                     kwargs={'post_id': PostFormTests.post.pk}),
             data=data,
             follow=True
         )
         self.assertLess(old_cout, Comment.objects.count())
         self.assertIn(data['text'], responce.content.decode())
-    
+
     def test_nonauth_create_comment(self):
         """Неавторизованный пользователь не может создать комментарий."""
         data = {
@@ -213,7 +213,7 @@ class PostFormTests(TestCase):
         }
         old_cout = Comment.objects.count()
         self.guest_client.post(
-            reverse('posts:add_comment', 
+            reverse('posts:add_comment',
                     kwargs={'post_id': PostFormTests.post.pk}),
             data=data,
             follow=True

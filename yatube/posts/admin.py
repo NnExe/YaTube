@@ -24,11 +24,12 @@ class GroupAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
     inlines = [PostsInline]
 
+
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'post', 'author', 'text', 'created')
-    
+
+
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'author', )
-    

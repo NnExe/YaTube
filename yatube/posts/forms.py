@@ -17,7 +17,8 @@ class GroupForm(forms.ModelForm):
         help_texts = {'title': 'Короткое название',
                       'slug': 'slug-строка, которая может быть частью адреса',
                       'description': 'Полное описание группы'}
-        
+
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
