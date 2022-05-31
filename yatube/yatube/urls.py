@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('posts.urls', namespace='posts')),
     path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
+    path('avatar/', include('avatar.urls')),
     path('about/', include('about.urls', namespace='about')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

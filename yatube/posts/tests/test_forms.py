@@ -204,7 +204,7 @@ class PostFormTests(TestCase):
             follow=True
         )
         self.assertLess(old_cout, Comment.objects.count())
-        self.assertIn(data['text'], responce.content.decode())
+        self.assertContains(responce, data['text'])
 
     def test_nonauth_create_comment(self):
         """Неавторизованный пользователь не может создать комментарий."""
@@ -212,10 +212,11 @@ class PostFormTests(TestCase):
             'text': 'Глупый комментарий',
         }
         old_cout = Comment.objects.count()
-        self.guest_client.post(
+        responce=self.guest_client.post(
             reverse('posts:add_comment',
                     kwargs={'post_id': PostFormTests.post.pk}),
             data=data,
             follow=True
         )
         self.assertEqual(old_cout, Comment.objects.count())
+        self.assertNotContains(responce, data['text'])
