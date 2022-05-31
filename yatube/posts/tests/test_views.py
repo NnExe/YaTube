@@ -50,7 +50,7 @@ class PostsViewsTests(TestCase):
         self.other_authorized_client = Client()
         self.other_authorized_client.force_login(other_user)
 
-    def test_aview_in_context(self):
+    def test_picture_in_context(self):
         urls = (
             ('posts:home', None, 'posts/index.html'),
             ('posts:group_list', (PostsViewsTests.group.slug,),
