@@ -1,9 +1,9 @@
 from django.conf import settings
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
-from .forms import CommentForm, GroupForm, PostForm
+from .forms import CommentForm, PostForm
 from .models import Comment, Follow, Group, Post, User
 from .utils import my_paginator
 
@@ -37,11 +37,10 @@ def profile(request, username):
     posts = user.posts.select_related("group").all()
     page_number = request.GET.get('page')
     page_obj = my_paginator(posts, page_number)
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user).filter(author=user).exists()
-    else:
-        following = False
+    following = (request.user.is_authenticated
+                 and Follow.objects.filter(
+                     user=request.user).filter(author=user).exists()
+                 )
     context = {
         'page_obj': page_obj,
         'no_author': True,
@@ -110,35 +109,6 @@ def post_delete(request, post_id):
     return redirect('posts:profile', post.author.username)
 
 
-@permission_required('posts.add_groups')
-def group_create(request):
-    form = GroupForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('posts:group_list', form.cleaned_data['slug'])
-    context = {
-        'form': form,
-        'title': 'Добавить группу',
-        'button_name': 'Добавить',
-    }
-    return render(request, 'posts/create_post.html', context)
-
-
-@permission_required('posts.add_groups')
-def group_edit(request, slug):
-    group = get_object_or_404(Group, slug=slug)
-    form = GroupForm(request.POST or None, instance=group)
-    if form.is_valid():
-        form.save()
-        return redirect("posts:group_list", slug)
-    context = {
-        'form': form,
-        'title': 'Редактировать группу',
-        'button_name': 'Сохранить',
-    }
-    return render(request, 'posts/create_post.html', context)
-
-
 @login_required
 def add_comment(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
@@ -183,6 +153,5 @@ def profile_unfollow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
     follower = Follow.objects.filter(user=user).filter(author=author)
-    if follower.exists():
-        follower.delete()
+    follower.delete()
     return redirect('posts:profile', author.username)
