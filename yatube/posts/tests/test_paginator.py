@@ -1,8 +1,11 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from ..models import Group, Post, User
-from django.conf import settings
 from math import ceil
+
+from django.conf import settings
+from django.core.cache import cache
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from ..models import Group, Post, User
 
 
 class PaginatorViewsTest(TestCase):
@@ -39,6 +42,7 @@ class PaginatorViewsTest(TestCase):
         self.authorized_client = Client()
         # Авторизуем пользователя
         self.authorized_client.force_login(user)
+        cache.clear()
 
     def test_first_page_contains_ten_records(self):
         """Проверяем число постов на первой странице."""

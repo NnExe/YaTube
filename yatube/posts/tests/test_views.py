@@ -1,13 +1,20 @@
+import shutil
+import tempfile
+
 from django import forms
+from django.conf import settings
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.paginator import Page
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from ..models import Follow, Group, Post, User
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostsViewsTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -17,8 +24,10 @@ class PostsViewsTests(TestCase):
             b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
             b'\x02\x4c\x01\x00\x3b'
         )
-        cls.image = SimpleUploadedFile('small.gif', small_gif,
-                                       content_type='image/gif')
+        cls.image = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif')
         cls.user = User.objects.create_user(username='auth')
         cls.other_user = User.objects.create_user(username='other_auth')
         cls.group = Group.objects.create(
@@ -41,6 +50,11 @@ class PostsViewsTests(TestCase):
             ('posts:post_edit', (cls.post.pk,), 'posts/create_post.html'),
             ('posts:post_create', None, 'posts/create_post.html'),
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         user = PostsViewsTests.user

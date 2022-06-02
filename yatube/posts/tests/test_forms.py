@@ -1,13 +1,31 @@
-from django.test import TestCase, Client
-from django.urls import reverse
+import shutil
+import tempfile
+
+from django.conf import settings
 from django.contrib.auth.models import Permission
-from ..models import Post, User, Group, Comment
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase, override_settings
+from django.urls import reverse
+
+from ..models import Comment, Group, Post, User
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+            b'\x02\x4c\x01\x00\x3b'
+        )
+        cls.image = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif')
         cls.user = User.objects.create_user(username='auth')
         permission = Permission.objects.get(name='Может добавлять группы')
         cls.user.user_permissions.add(permission)
@@ -22,6 +40,11 @@ class PostFormTests(TestCase):
             description='Тестовое описание',
         )
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
     def setUp(self):
         self.guest_client = Client()
         user = PostFormTests.user
@@ -34,14 +57,9 @@ class PostFormTests(TestCase):
     def test_create_post(self):
         """Число постов увеличивается при дополнении."""
         new_text = 'Самый новый пост'
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
         data = {
             'text': new_text,
-            'image': small_gif,
+            'image': PostFormTests.image,
         }
         old_cout = Post.objects.count()
         self.authorized_client.post(
@@ -51,6 +69,12 @@ class PostFormTests(TestCase):
         )
         self.assertLess(old_cout, Post.objects.count())
         self.assertIsNotNone(Post.objects.all()[0].image)
+        self.assertTrue(
+            Post.objects.filter(
+                text=data['text'],
+                image=f"posts/{data['image']}"
+            ).exists()
+        )
 
     def test_edit_post(self):
         """Текст поста меняется при редактировании."""

@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Зарегистрироваться{% endblock %}
-
 {% block content %}
-  {% with form_name='Зарегистрироваться' %} 
-  {% with button_name='Зарегистрироваться' %} 
-  {% with is_button=True %}
-  {% url 'users:signup' as commit_url %}
-  
-    {% include "includes/form.html" %}
-  {% endwith %}
-  {% endwith %}
-  {% endwith %}
+    {% with form_name='Зарегистрироваться' %}
+        {% with button_name='Зарегистрироваться' %}
+            {% with is_button=True %}
+                {% url 'users:signup' as commit_url %}
+                {% include "includes/form.html" %}
+            {% endwith %}
+        {% endwith %}
+    {% endwith %}
 {% endblock %}
