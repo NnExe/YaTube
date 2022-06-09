@@ -59,6 +59,7 @@ class PostFormTests(TestCase):
         new_text = 'Самый новый пост'
         data = {
             'text': new_text,
+            'group': PostFormTests.group.pk,
             'image': PostFormTests.image,
         }
         old_cout = Post.objects.count()
@@ -150,3 +151,16 @@ class PostFormTests(TestCase):
             follow=True
         )
         self.assertEqual(old_cout, Comment.objects.count())
+
+    def test_csrf_token(self):
+        data = {
+            'text': 'new_text',
+        }
+        new_client = Client(enforce_csrf_checks=True)
+        new_client.force_login(self.user)
+        responce = new_client.post(
+            reverse('posts:post_create'),
+            data=data,
+            follow=True
+        )
+        self.assertTemplateUsed(responce, 'core/403csrf.html')

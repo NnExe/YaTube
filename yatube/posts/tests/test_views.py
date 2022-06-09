@@ -99,6 +99,7 @@ class PostsViewsTests(TestCase):
         cache.clear()
         response = self.authorized_client.get(reverse('posts:home'))
         self.assertIn('page_obj', response.context)
+        self.assertContains(response, '<img', html=False)
         self.assertIsInstance(response.context['page_obj'], Page)
 
     def test_groups_page_show_correct_context(self):
